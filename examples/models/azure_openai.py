@@ -4,20 +4,18 @@ Simple try of the agent.
 @dev You need to add AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT to your environment variables.
 """
 
+import asyncio
 import os
 import sys
 
+import anyio
 from dotenv import load_dotenv
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import asyncio
-
 from langchain_openai import AzureChatOpenAI
 
 from browser_use import Agent
 from browser_use.browser.browser import Browser, BrowserConfig
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 load_dotenv()
 
@@ -44,21 +42,27 @@ llm = AzureChatOpenAI(
 	api_version='2024-12-01-preview',
 )
 
-agent = Agent(
-	# task='Go to amazon.com, search for laptop, sort by best rating, and give me the price of the first result',
-	task='請幫我用 bing 查詢最新的 AI 新聞，並列出 10 條最新的新聞標題和鏈接。並轉換成 markdown 格式。',
-	llm=llm,
-	# enable_memory=True,
-	# browser=browser,
-)
 
+async def run_search(task: str = None):
+	if task is None:
+		task = '請幫我用 bing 查詢最新的 AI 新聞，並列出 10 條最新的新聞標題和鏈接。並轉換成 markdown 格式。'
 
-async def main():
+	agent = Agent(
+		task=task,
+		llm=llm,
+		# enable_memory=True,
+		# browser=browser,
+	)
+
 	await agent.run(max_steps=10)
 	# 取得最後結果
 	if agent.state.last_result and agent.state.last_result[-1].extracted_content:
-		with open('result.md', 'w', encoding='utf-8') as f:
-			f.write(agent.state.last_result[-1].extracted_content)
-	# input('Press Enter to continue...')
+		content = agent.state.last_result[-1].extracted_content
+		async with await anyio.open_file('result.md', 'w', encoding='utf-8') as f:
+			await f.write(content)
+		return content
+	return ''
 
-asyncio.run(main())
+
+if __name__ == '__main__':
+	asyncio.run(run_search())
