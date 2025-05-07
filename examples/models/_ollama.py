@@ -18,8 +18,8 @@ async def run_search() -> AgentHistoryList:
 	agent = Agent(
 		task="Search for a 'browser use' post on the r/LocalLLaMA subreddit and open it.",
 		llm=ChatOllama(
-			model='qwen2.5:32b-instruct-q4_K_M',
-			num_ctx=32000,
+			model='qwen3:8b',
+			# num_ctx=32000,
 		),
 	)
 

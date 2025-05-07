@@ -39,6 +39,7 @@ dependencies = [
     "rich>=14.0.0",
     "click>=8.1.8",
     "textual>=3.2.0",
+    "langchain-openrouter>=0.0.1",
 ]
 # botocore: only needed for Bedrock Claude boto3 examples/models/bedrock_claude.py 
 # pydantic: >2.11 introduces many pydantic deprecation warnings until langchain-core upgrades their pydantic support lets keep it on 2.10

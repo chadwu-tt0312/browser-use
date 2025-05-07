@@ -36,3 +36,8 @@ private_example.py
 private_example
 
 uv.lock
+# SpecStory explanation file
+.specstory/.what-is-this.md
+
+logs/
+*.log

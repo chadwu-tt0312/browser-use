@@ -1,7 +1,8 @@
 import logging
 import os
 import sys
-
+from datetime import datetime
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -81,6 +82,14 @@ def setup_logging():
 				record.name = record.name.split('.')[-2]
 			return super().format(record)
 
+	# CW: 建立 logs 目錄
+	log_dir = Path("logs")
+	log_dir.mkdir(exist_ok=True)
+	current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+	log_file = log_dir / f"browser_use-{current_time}.log"
+	fileHdl = logging.FileHandler(log_file, encoding='utf-8')
+	fileHdl.setFormatter(BrowserUseFormatter('%(asctime)s %(levelname)-8s [%(name)s] %(message)s'))
+
 	# Setup single handler for all loggers
 	console = logging.StreamHandler(sys.stdout)
 
@@ -93,6 +102,7 @@ def setup_logging():
 
 	# Configure root logger only
 	root.addHandler(console)
+	root.addHandler(fileHdl)  # CW: 新增 file handler
 
 	# switch cases for log_type
 	if log_type == 'result':
@@ -106,6 +116,7 @@ def setup_logging():
 	browser_use_logger = logging.getLogger('browser_use')
 	browser_use_logger.propagate = False  # Don't propagate to root logger
 	browser_use_logger.addHandler(console)
+	browser_use_logger.addHandler(fileHdl)  # CW: 新增 file handler
 	browser_use_logger.setLevel(root.level)  # Set same level as root logger
 
 	logger = logging.getLogger('browser_use')
