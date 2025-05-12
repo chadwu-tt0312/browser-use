@@ -55,7 +55,7 @@ class SearchResponse(BaseModel):
 	execution_time: float
 
 
-@app.post('/search', response_model=SearchResponse)
+@app.post('/search', response_model=SearchResponse, operation_id='search_task')
 async def search(request: SearchRequest):
 	task_id = f'{datetime.now().timestamp()}'
 	logger.info(f'收到新的 search 請求 {task_id}: {request.task}')
@@ -87,7 +87,7 @@ async def search(request: SearchRequest):
 		raise HTTPException(status_code=500, detail=error_msg)
 
 
-@app.get('/health')
+@app.get('/health', operation_id='health_check')
 async def health_check():
 	logger.info('健康檢查請求')
 	return {'status': 'healthy'}
