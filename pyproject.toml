@@ -40,6 +40,9 @@ dependencies = [
     "click>=8.1.8",
     "textual>=3.2.0",
     "langchain-openrouter>=0.0.1",
+    "fastapi>=0.115.12",
+    "uvicorn>=0.34.2",
+    "playwright>=1.52.0",
 ]
 # botocore: only needed for Bedrock Claude boto3 examples/models/bedrock_claude.py 
 # pydantic: >2.11 introduces many pydantic deprecation warnings until langchain-core upgrades their pydantic support lets keep it on 2.10
@@ -98,6 +101,7 @@ include = [
     "!browser_use/**/tests.py",
     "browser_use/agent/system_prompt.md",
     "browser_use/dom/buildDomTree.js",
+    "examples/models/*.py",
 ]
 
 [tool.uv]

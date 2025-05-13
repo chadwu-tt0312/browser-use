@@ -65,7 +65,7 @@ def get_default_config() -> dict[str, Any]:
 	"""Return default configuration dictionary."""
 	return {
 		'model': {
-			'name': None,
+			'name': 'gpt-4o-mini',
 			'temperature': 0.0,
 			'api_keys': {
 				'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', ''),
@@ -77,7 +77,7 @@ def get_default_config() -> dict[str, Any]:
 		},
 		'agent': {},  # AgentSettings will use defaults
 		'browser': {
-			'headless': True,
+			'headless': False,
 		},
 		'browser_context': {
 			'keep_alive': True,
@@ -179,17 +179,23 @@ def get_llm(config: dict[str, Any]):
 	if model_name:
 		if model_name.startswith('gpt'):
 			if not os.getenv('OPENAI_API_KEY'):
-				print('⚠️  OpenAI API key not found. Please update your config or set OPENAI_API_KEY environment variable.')
+				print(
+					'⚠️  OpenAI API key not found. Please update your config or set OPENAI_API_KEY environment variable.'
+				)
 				sys.exit(1)
 			return langchain_openai.ChatOpenAI(model=model_name, temperature=temperature)
 		elif model_name.startswith('claude'):
 			if not os.getenv('ANTHROPIC_API_KEY'):
-				print('⚠️  Anthropic API key not found. Please update your config or set ANTHROPIC_API_KEY environment variable.')
+				print(
+					'⚠️  Anthropic API key not found. Please update your config or set ANTHROPIC_API_KEY environment variable.'
+				)
 				sys.exit(1)
 			return langchain_anthropic.ChatAnthropic(model=model_name, temperature=temperature)
 		elif model_name.startswith('gemini'):
 			if not os.getenv('GOOGLE_API_KEY'):
-				print('⚠️  Google API key not found. Please update your config or set GOOGLE_API_KEY environment variable.')
+				print(
+					'⚠️  Google API key not found. Please update your config or set GOOGLE_API_KEY environment variable.'
+				)
 				sys.exit(1)
 			return langchain_google_genai.ChatGoogleGenerativeAI(model=model_name, temperature=temperature)
 
@@ -783,7 +789,10 @@ class BrowserUseApp(App):
 					pass
 
 				# Show the agent's current page URL if available
-				if hasattr(self.agent.browser_context, 'agent_current_page') and self.agent.browser_context.agent_current_page:
+				if (
+					hasattr(self.agent.browser_context, 'agent_current_page')
+					and self.agent.browser_context.agent_current_page
+				):
 					current_url = (
 						self.agent.browser_context.agent_current_page.url.replace('https://', '')
 						.replace('http://', '')
@@ -853,7 +862,9 @@ class BrowserUseApp(App):
 				if hasattr(self.agent, 'running'):
 					if self.agent.running:
 						model_info.write('[yellow]LLM is thinking[blink]...[/][/]')
-					elif hasattr(self.agent, 'state') and hasattr(self.agent.state, 'paused') and self.agent.state.paused:
+					elif (
+						hasattr(self.agent, 'state') and hasattr(self.agent.state, 'paused') and self.agent.state.paused
+					):
 						model_info.write('[orange]LLM paused[/]')
 		else:
 			model_info.write('[red]Model not initialized[/]')
@@ -1130,7 +1141,9 @@ class BrowserUseApp(App):
 				with HorizontalGroup(classes='link-row'):
 					yield Static('Chat & share on Discord:  🚀 ', markup=True, classes='link-label')
 					yield Link(
-						'https://discord.gg/ESAUZAdxXY', url='https://discord.gg/ESAUZAdxXY', classes='link-purple link-url'
+						'https://discord.gg/ESAUZAdxXY',
+						url='https://discord.gg/ESAUZAdxXY',
+						classes='link-purple link-url',
 					)
 
 				with HorizontalGroup(classes='link-row'):
