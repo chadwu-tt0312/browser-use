@@ -1,10 +1,10 @@
 """
+用 bash 測試時，task 內的中文字解析有問題
+-d '{"task": "請幫我用 bing 查詢最新的 AI 新聞，並列出 10 條最新的新聞標題和鏈接。並轉換成 markdown 格式。", "type": "gemini"}'
+---
 curl -X POST "http://localhost:8881/search" \
 -H "Content-Type: application/json" \
--d '{
-    "task": "請幫我查詢最新的 AI 新聞，並列出 10 條最新的新聞標題和鏈接。並轉換成 markdown 格式。",
-    "type": "azure"
-    }'
+-d '{"task": "Please help me search for the latest AI news using bing and list the 10 latest news titles and links. And convert it to markdown format.", "type": "gemini"}'
 """
 
 import logging

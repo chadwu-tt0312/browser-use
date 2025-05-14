@@ -2,7 +2,9 @@ import logging
 import os
 import sys
 from datetime import datetime
+from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -83,11 +85,18 @@ def setup_logging():
 			return super().format(record)
 
 	# CW: 建立 logs 目錄
-	log_dir = Path("logs")
+	log_dir = Path('logs')
 	log_dir.mkdir(exist_ok=True)
-	current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-	log_file = log_dir / f"browser_use-{current_time}.log"
-	fileHdl = logging.FileHandler(log_file, encoding='utf-8')
+	current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+	log_file = log_dir / f'browser_use-{current_time}.log'
+	# fileHdl = logging.FileHandler(log_file, encoding='utf-8')
+	fileHdl = logging.TimedRotatingFileHandler(
+		log_file,
+		when='midnight',
+		interval=1,
+		backupCount=30,  # 符合30天保留策略
+		encoding='utf-8',
+	)
 	fileHdl.setFormatter(BrowserUseFormatter('%(asctime)s %(levelname)-8s [%(name)s] %(message)s'))
 
 	# Setup single handler for all loggers
