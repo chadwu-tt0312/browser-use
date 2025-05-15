@@ -20,8 +20,7 @@ dist/
 *.txt
 *.pdf
 *.csv
-*.json
-*.jsonl
+
 
 # Secrets and sensitive files
 secrets.env
@@ -43,5 +42,4 @@ logs/
 *.log
 
 .deepeval/
-.devcontainer/
 result.md

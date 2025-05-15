@@ -77,7 +77,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     # fonts-dejavu-extra \
     # python3-numpy \
 
-    RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     netcat-traditional \
     xvfb \
     xauth \
