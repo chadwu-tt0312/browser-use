@@ -52,7 +52,7 @@ def parse_agent_history(history_str: str) -> None:
 async def run_browser_task(
 	task: str,
 	api_key: str,
-	model: str = 'gpt-4o',
+	model: str = 'gpt-4o-mini',
 	headless: bool = True,
 ) -> str:
 	if not api_key.strip():
@@ -63,7 +63,7 @@ async def run_browser_task(
 	try:
 		agent = Agent(
 			task=task,
-			llm=ChatOpenAI(model='gpt-4o'),
+			llm=ChatOpenAI(model=model),
 		)
 		result = await agent.run()
 		#  TODO: The result cloud be parsed better
@@ -84,7 +84,7 @@ def create_ui():
 					placeholder='E.g., Find flights from New York to London for next week',
 					lines=3,
 				)
-				model = gr.Dropdown(choices=['gpt-4', 'gpt-3.5-turbo'], label='Model', value='gpt-4')
+				model = gr.Dropdown(choices=['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'], label='Model', value='gpt-4')
 				headless = gr.Checkbox(label='Run Headless', value=True)
 				submit_btn = gr.Button('Run Task')
 

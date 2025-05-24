@@ -90,7 +90,7 @@ def setup_logging():
 	current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
 	log_file = log_dir / f'browser_use-{current_time}.log'
 	# fileHdl = logging.FileHandler(log_file, encoding='utf-8')
-	fileHdl = logging.TimedRotatingFileHandler(
+	fileHdl = TimedRotatingFileHandler(
 		log_file,
 		when='midnight',
 		interval=1,

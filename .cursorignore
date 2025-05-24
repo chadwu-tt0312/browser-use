@@ -5,7 +5,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .mypy_cache/
-.ruff_cache/
+.ruff_cache
 .ipynb_checkpoints
 
 # VirtualEnvironments
@@ -34,12 +34,13 @@ AgentHistoryList.json
 private_example.py
 private_example
 
+
 # SpecStory explanation file
-.specstory/.what-is-this.md
+.specstory/
 
 logs/
 *.log
 
 .deepeval/
 result.md
-uv.lock
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)

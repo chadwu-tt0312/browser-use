@@ -39,7 +39,6 @@ dependencies = [
     "rich>=14.0.0",
     "click>=8.1.8",
     "textual>=3.2.0",
-    "langchain-openrouter>=0.0.1",
     "fastapi>=0.115.12",
     "uvicorn>=0.34.2",
     "playwright>=1.52.0",
@@ -104,19 +103,19 @@ include = [
     "examples/models/*.py",
 ]
 
-[tool.uv]
-dev-dependencies = [
-    "ruff>=0.11.2",
-    "tokencost>=0.1.16",
-    "build>=1.2.2",
-    "pytest>=8.3.5",
-    "pytest-asyncio>=0.24.0",
-    "fastapi>=0.115.8",
-    "inngest>=0.4.19",
-    "uvicorn>=0.34.0",
-    "langchain-fireworks>=0.2.6",
-    "ipdb>=0.13.13",
-    "pre-commit>=4.2.0",
-    "codespell>=2.4.1",
-    "pyright>=1.1.399",
-]
+# [tool.uv]
+# dev-dependencies = [
+#     "ruff>=0.11.2",
+#     "tokencost>=0.1.16",
+#     "build>=1.2.2",
+#     "pytest>=8.3.5",
+#     "pytest-asyncio>=0.24.0",
+#     "fastapi>=0.115.8",
+#     "inngest>=0.4.19",
+#     "uvicorn>=0.34.0",
+#     "langchain-fireworks>=0.2.6",
+#     "ipdb>=0.13.13",
+#     "pre-commit>=4.2.0",
+#     "codespell>=2.4.1",
+#     "pyright>=1.1.399",
+# ]

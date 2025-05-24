@@ -7,6 +7,7 @@ curl -X POST "http://localhost:8881/search" \
 -d '{"task": "Please help me search for the latest AI news using bing and list the 10 latest news titles and links. And convert it to markdown format.", "type": "gemini"}'
 """
 
+import asyncio
 import logging
 import os
 import sys
@@ -45,7 +46,7 @@ class SearchRequest(BaseModel):
 	type: str = 'gemini'  # 可選: "gemini", "openai", "azure"
 	# max_steps: Optional[int] = 25
 	# max_actions_per_step: Optional[int] = 4
-	# timeout_minutes: Optional[int] = 10
+	timeout_minutes: Optional[int] = 10
 
 
 class SearchResponse(BaseModel):
@@ -60,17 +61,21 @@ async def search(request: SearchRequest):
 	task_id = f'{datetime.now().timestamp()}'
 	logger.info(f'收到新的 search 請求 {task_id}: {request.task}')
 
+	# 設定超時時間（默認為 10 分鐘）
+	timeout_seconds = (request.timeout_minutes or 10) * 60
+	# logger.info(f'設定請求超時時間: {timeout_seconds} 秒 ({request.timeout_minutes or 10} 分鐘)')
+
 	start_time = datetime.now()
 	try:
 		if request.type == 'gemini':
 			logger.info('使用 Gemini 執行任務')
-			result = await gemini_search(request.task)
+			result = await asyncio.wait_for(gemini_search(request.task), timeout=timeout_seconds)
 		elif request.type == 'openai':
 			logger.info('使用 OpenAI 執行任務')
-			result = await gpt4o_search(request.task)
+			result = await asyncio.wait_for(gpt4o_search(request.task), timeout=timeout_seconds)
 		elif request.type == 'azure':
 			logger.info('使用 Azure 執行任務')
-			result = await azure_search(request.task)
+			result = await asyncio.wait_for(azure_search(request.task), timeout=timeout_seconds)
 		else:
 			error_msg = f'不支援的類型: {request.type}'
 			logger.error(error_msg)
@@ -80,6 +85,11 @@ async def search(request: SearchRequest):
 		logger.info(f'任務 {task_id} 執行完成，耗時: {execution_time:.2f} 秒')
 
 		return SearchResponse(content=result, status='success', type=request.type, execution_time=execution_time)
+	except asyncio.TimeoutError:
+		execution_time = (datetime.now() - start_time).total_seconds()
+		error_msg = f'任務 {task_id} 執行超時 (超過 {request.timeout_minutes or 10} 分鐘)'
+		logger.error(error_msg)
+		raise HTTPException(status_code=408, detail=error_msg)
 	except Exception as e:
 		execution_time = (datetime.now() - start_time).total_seconds()
 		error_msg = f'任務 {task_id} 執行失敗: {str(e)}'
