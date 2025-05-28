@@ -1,0 +1,4 @@
+[[index]]
+url = "http://10.11.108.86:8090/repository/pypi-jm02/simple/"
+default = true
+allow-insecure-host = ["10.11.108.86:8090"]

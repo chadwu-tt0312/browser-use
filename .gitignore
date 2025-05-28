@@ -36,6 +36,7 @@ private_example
 
 # SpecStory explanation file
 .specstory/.what-is-this.md
+.gitignore
 
 logs/
 *.log

@@ -7,13 +7,15 @@ Simple try of the agent.
 import asyncio
 import os
 import sys
+from urllib.parse import urlparse
 
 import anyio
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI
 
 from browser_use import Agent
-from browser_use.browser.browser import Browser, BrowserConfig
+from browser_use.browser.browser import Browser, BrowserConfig, ProxySettings
+from browser_use.browser.context import BrowserContextConfig
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -22,22 +24,38 @@ load_dotenv()
 # Retrieve Azure-specific environment variables
 azure_openai_api_key = os.getenv('AZURE_OPENAI_KEY')
 azure_openai_endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
+user_agent = os.getenv('USER_AGENT')
 
 if not azure_openai_api_key or not azure_openai_endpoint:
 	raise ValueError('AZURE_OPENAI_KEY or AZURE_OPENAI_ENDPOINT is not set')
 
+proxy_url = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
+if proxy_url:
+	# print("proxy_url", proxy_url)
+	parsed = urlparse(proxy_url)
+	proxy = ProxySettings(
+		server=f'{parsed.scheme}://{parsed.hostname}:{parsed.port}',
+		username=parsed.username if parsed.username else None,
+		password=parsed.password if parsed.password else None,
+	)
+
 browser = Browser(
 	config=BrowserConfig(
-		headless=True,  # 啟用無頭模式
-		disable_security=True,  # 可選：如果需要禁用某些安全限制
-		# NOTE: you need to close your chrome browser - so that this can open your browser in debug mode
-		# browser_binary_path='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+		headless=False,
+		# proxy=proxy if proxy_url else None,
+		# new_context_config=BrowserContextConfig(
+		# 	user_agent=user_agent,
+		# 	ignore_https_errors=True,  # 忽略 SSL 憑證錯誤
+		# 	# disable_security=True,
+		# ),
 	)
 )
 
 # Initialize the Azure OpenAI client
 llm = AzureChatOpenAI(
+	# model_name='gpt-4.1',	# fail
 	model_name='gpt-4o-mini',
+	# model_name='gpt-4o',
 	openai_api_key=azure_openai_api_key,
 	azure_endpoint=azure_openai_endpoint,
 	deployment_name='gpt-4o-mini',
@@ -53,7 +71,7 @@ async def run_search(task: str = None):
 		task=task,
 		llm=llm,
 		enable_memory=True,
-		# browser=browser,
+		browser=browser,
 	)
 
 	result = await agent.run(max_steps=10)
@@ -67,13 +85,6 @@ async def run_search(task: str = None):
 		async with await anyio.open_file('result.md', 'w', encoding='utf-8') as f:
 			await f.write(agent_message)
 	return agent_message
-
-	# if agent.state.last_result and agent.state.last_result[-1].extracted_content:
-	# 	content = agent.state.last_result[-1].extracted_content
-	# 	async with await anyio.open_file('result.md', 'w', encoding='utf-8') as f:
-	# 		await f.write(content)
-	# 	return content
-	# return ''
 
 
 if __name__ == '__main__':
