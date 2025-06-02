@@ -24,32 +24,62 @@ load_dotenv()
 # Retrieve Azure-specific environment variables
 azure_openai_api_key = os.getenv('AZURE_OPENAI_KEY')
 azure_openai_endpoint = os.getenv('AZURE_OPENAI_ENDPOINT')
-user_agent = os.getenv('USER_AGENT')
 
 if not azure_openai_api_key or not azure_openai_endpoint:
 	raise ValueError('AZURE_OPENAI_KEY or AZURE_OPENAI_ENDPOINT is not set')
 
-proxy_url = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
-if proxy_url:
-	# print("proxy_url", proxy_url)
-	parsed = urlparse(proxy_url)
-	proxy = ProxySettings(
-		server=f'{parsed.scheme}://{parsed.hostname}:{parsed.port}',
-		username=parsed.username if parsed.username else None,
-		password=parsed.password if parsed.password else None,
-	)
 
-browser = Browser(
-	config=BrowserConfig(
-		headless=False,
-		# proxy=proxy if proxy_url else None,
-		# new_context_config=BrowserContextConfig(
-		# 	user_agent=user_agent,
-		# 	ignore_https_errors=True,  # 忽略 SSL 憑證錯誤
-		# 	# disable_security=True,
-		# ),
-	)
-)
+def create_browser_with_params(user_agent: str = None, proxy_username: str = None, proxy_password: str = None):
+	"""根據參數動態創建瀏覽器配置"""
+
+	umc_setting = os.environ.get('UMC_SETTING')
+	# print('umc_setting =', umc_setting)
+
+	if umc_setting == 'true':
+		proxy_url = os.environ.get('HTTPS_PROXY') or os.environ.get('https_proxy')
+
+		if not proxy_url:
+			raise ValueError('HTTPS_PROXY is not set when UMC_SETTING=true')
+
+		# 使用傳入的 user_agent 或環境變數
+		final_user_agent = user_agent or os.getenv('USER_AGENT')
+		# print('final_user_agent =', final_user_agent)
+
+		if not final_user_agent:
+			raise ValueError('USER_AGENT is not set and not provided as parameter when UMC_SETTING=true')
+
+		# 解析代理 URL
+		parsed = urlparse(proxy_url)
+
+		# 使用傳入的認證資訊或從 URL 中提取
+		final_username = proxy_username or parsed.username
+		final_password = proxy_password or parsed.password
+		# print('final_username =', final_username)
+		# print('final_password =', final_password)
+
+		proxy = ProxySettings(
+			server=f'{parsed.scheme}://{parsed.hostname}:{parsed.port}',
+			username=final_username,
+			password=final_password,
+		)
+
+		return Browser(
+			config=BrowserConfig(
+				headless=False,
+				proxy=proxy,
+				new_context_config=BrowserContextConfig(
+					user_agent=final_user_agent,
+					ignore_https_errors=True,  # 忽略 SSL 憑證錯誤
+				),
+			)
+		)
+	else:
+		return Browser(
+			config=BrowserConfig(
+				headless=False,
+			)
+		)
+
 
 # Initialize the Azure OpenAI client
 llm = AzureChatOpenAI(
@@ -60,21 +90,27 @@ llm = AzureChatOpenAI(
 	azure_endpoint=azure_openai_endpoint,
 	deployment_name='gpt-4o-mini',
 	api_version='2024-12-01-preview',
+	temperature=0,
 )
 
 
-async def run_search(task: str = None):
+async def run_search(task: str = None, user_agent: str = None, proxy_username: str = None, proxy_password: str = None):
 	if task is None:
 		task = '請幫我用 bing 查詢最新的 AI 新聞，並列出 10 條最新的新聞標題和鏈接。並轉換成 markdown 格式。'
+
+	# 動態創建瀏覽器配置，根據傳入的參數
+	browser_to_use = create_browser_with_params(user_agent, proxy_username, proxy_password)
 
 	agent = Agent(
 		task=task,
 		llm=llm,
-		enable_memory=True,
-		browser=browser,
+		# enable_memory=True,
+		enable_memory=False,
+		browser=browser_to_use,
 	)
 
 	result = await agent.run(max_steps=10)
+	await browser_to_use.close()
 	# 取得最後結果
 	agent_message = None
 	if result.is_done():

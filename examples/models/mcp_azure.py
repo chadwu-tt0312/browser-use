@@ -1,3 +1,10 @@
+"""
+Simple try of the agent.
+
+@dev You need to add AZURE_OPENAI_KEY and AZURE_OPENAI_ENDPOINT to your environment variables.
+@memo: 只能呼叫一次，之後就會 "Result failed"
+"""
+
 # 處理 "Received request before initialization was complete" 錯誤
 # 這是一個已知的 MCP SSE 問題，當客戶端在伺服器重啟後沒有正確重新初始化連接時會發生
 # 參考：https://github.com/modelcontextprotocol/python-sdk/issues/423
@@ -7,10 +14,10 @@
 
 import asyncio
 import os
-from typing import Awaitable, Callable
+import sys
 from urllib.parse import urlparse
 
-import aiofiles
+import anyio
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI
 from mcp.server.fastmcp import Context, FastMCP
@@ -43,12 +50,12 @@ if proxy_url:
 browser = Browser(
 	config=BrowserConfig(
 		headless=False,
-		# proxy=proxy if proxy_url else None,
-		# new_context_config=BrowserContextConfig(
-		# 	user_agent=user_agent,
-		# 	ignore_https_errors=True,  # 忽略 SSL 憑證錯誤
-		# 	# disable_security=True,
-		# ),
+		proxy=proxy if proxy_url else None,
+		new_context_config=BrowserContextConfig(
+			user_agent=user_agent,
+			ignore_https_errors=True,  # 忽略 SSL 憑證錯誤
+			# disable_security=True,
+		),
 	)
 )
 
@@ -60,6 +67,7 @@ llm = AzureChatOpenAI(
 	openai_api_key=azure_openai_api_key,
 	azure_endpoint=azure_openai_endpoint,
 	deployment_name='gpt-4o-mini',
+	# deployment_name='gpt-4o',
 	api_version='2024-12-01-preview',
 )
 agent = None
@@ -97,19 +105,21 @@ async def run_browser_agent(task: str):
 	try:
 		agent = Agent(
 			task=task,
-			browser=browser,
 			llm=llm,
 			# enable_memory=True,
+			enable_memory=False,
+			browser=browser,
 		)
 
-		result = await agent.run()
+		result = await agent.run(max_steps=10)
+		# 取得最後結果
 		agent_message = None
 		if result.is_done():
 			agent_message = result.history[-1].result[0].extracted_content
 		if agent_message is None:
 			agent_message = 'Oops! Something went wrong while running Browser-Use.'
 		else:
-			async with aiofiles.open('result.md', 'w', encoding='utf-8') as f:
+			async with await anyio.open_file('result.md', 'w', encoding='utf-8') as f:
 				await f.write(agent_message)
 		return agent_message
 	except asyncio.CancelledError:

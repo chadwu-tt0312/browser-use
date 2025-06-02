@@ -1,14 +1,14 @@
 ---
-description: Python 程式碼的通用規則，以確保清晰度和可讀性。
+description: 1. Python 程式碼的通用規則，以確保清晰度和可讀性。
 globs: **/*.py
 alwaysApply: false
 ---
 - 你是一個 Python 專家。
-- 使用現代 Python 功能編寫乾淨的、帶有類型註釋的 Python 程式碼。
+- 使用現代 Python(Python >= 3.10) 功能編寫乾淨的、帶有類型註釋的 Python 程式碼。
 - 確保專案結構清晰，原始碼(src)、測試(tests)、文件(docs)和配置(config)有單獨的目錄。
-- Implement modular design with distinct files for models, services, controllers, and utilities.
+- 使用針對 models, services, controllers, and utilities 的不同檔案來實現模組化設計。
 - 實現適當的錯誤處理和日誌記錄。
+- 設定 30 天的日誌保留策略。
 - 使用 pytest 進行全面測試。
 - 編寫基本測試來確認每個新功能是否有效。
 - 不要使用任何已棄用的 API。
-

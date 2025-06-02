@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
@@ -84,10 +84,21 @@ def setup_logging():
 				record.name = record.name.split('.')[-2]
 			return super().format(record)
 
-	# CW: 建立 logs 目錄
+		# CW: 建立 logs 目錄
+
 	log_dir = Path('logs')
 	log_dir.mkdir(exist_ok=True)
-	current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+	# 使用環境變數中的時區設定
+	tz_env = os.getenv('TZ')
+	if tz_env and tz_env == 'Asia/Taipei':
+		# 台灣時區 UTC+8
+		taiwan_tz = timezone(timedelta(hours=8))
+		current_time = datetime.now(taiwan_tz).strftime('%Y%m%d_%H%M%S')
+	else:
+		# 使用本地時間
+		current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+
 	log_file = log_dir / f'browser_use-{current_time}.log'
 	# fileHdl = logging.FileHandler(log_file, encoding='utf-8')
 	fileHdl = TimedRotatingFileHandler(
